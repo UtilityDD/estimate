@@ -38,7 +38,7 @@ th {
     font-weight: 600;
 }
 input[type="number"] {
-    min-width: 60px; /* Keeps input fields compact */
+    min-width: 40px; /* Keeps input fields compact */
     max-width: 100px;
     width: 95%; 
     padding: 6x;
@@ -98,84 +98,80 @@ input[type="number"] {
     display: inline-block; /* Show only when hovering over the last column */
 }
 @media print {
-    /* Hide print button */
-    #printButton {
-        display: none;
+    /* Hide UI Elements */
+    .no-print, #printButton, .delete-cell {
+        display: none !important;
     }
-    /* Set clean font size and remove extra borders */
-    body {
-        font-size: 12px;
+
+    /* Remove Any Background and Shadows */
+    html, body {
+        background: white !important;
         color: black;
+        font-size: 12px;
         margin: 0;
         padding: 0;
+        box-shadow: none !important;
+        filter: none !important;
     }
-    /* Tables should fit well and break properly */
-    table {
+
+    /* Remove Any Potential Box Shadows from Containers */
+    * {
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    /* Center Tables */
+    .table-container {
+        display: flex;
+        justify-content: center;
         width: 100%;
+    }
+
+    table {
+        width: 90%;
+        max-width: 90%;
         border-collapse: collapse;
         page-break-inside: auto;
+        margin: auto;
     }
+
     th, td {
-        border: 1px solid #ddd; /* Very light border */
-        padding: 5px;
-        text-align: left;
+        border: 1px solid #ddd;
+        padding: 6px;
+        text-align: center;
     }
-    th {
-        border: 0px solid #ddd; /* Very light border */
-        padding: 5px;
-        text-align: left;
+
+    thead th {
+        background-color: #f0f0f0;
+        font-weight: bold;
+        padding: 8px;
     }
+
     tr {
         page-break-inside: avoid;
     }
-    /* Remove unnecessary UI elements */
-    .no-print {
-        display: none;
+
+    /* Ensure Table Headers Repeat on New Pages */
+    thead { 
+        display: table-header-group;
     }
-    /* Ensure proper page margins */
+
+    tbody {
+        display: table-row-group;
+    }
+
+    /* Remove Borders from Inputs */
+    input {
+        border: none !important;
+        background: transparent !important;
+        outline: none !important;
+    }
+
+    /* Fix Print Page Margins to Avoid Overflow */
     @page {
         size: A4;
-        margin: 5mm;
+        margin: 10mm;
     }
-    /* Hide delete column */
-    .delete-cell, 
-    .delete-cell * {
-        display: none !important;
-    }
-        /* Specifically fix summary table width */
-        .summary-table {
-        width: 100% !important;
-    }
-  /* Shade table headers */
-  thead th {
-        background-color: #ddd !important; /* Light gray shade */
-        color: black !important;
-        padding: 8px;
-        text-align: left;
-        font-weight: bold;
-    }
-    /* Ensure table headers and cells take equal space */
-    th, td {
-        width: auto !important;
-        padding: 8px;
-        text-align: left;
-        border: 1px solid #ccc; /* Light border for clarity */
-    }
-    thead { 
-            display: table-header-group; /* Ensures headers repeat */
-        }
-        tbody {
-            display: table-row-group;
-        }
-        .table-container {
-            page-break-inside: avoid; /* Prevents table name from separating from table */
-            margin-bottom: 20px;
-        }
-        input {
-            border: none !important;
-            background: transparent !important;
-            outline: none !important;
-        }
 }
     </style>
 </head>
