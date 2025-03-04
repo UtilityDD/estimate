@@ -21,7 +21,7 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         table {
-    width: 95%;
+    width: 100%;
     margin: auto;
     border-collapse: collapse;
     table-layout: auto; /* Ensures columns adjust dynamically */
@@ -32,13 +32,14 @@ th, td {
     border: 1px solid #ddd;
     font-size: small;
     white-space: nowrap; /* Prevents text wrapping */
+    
 }
 th {
     background-color: #f4f4f4;
     font-weight: 600;
 }
 input[type="number"] {
-    min-width: 40px; /* Keeps input fields compact */
+    min-width: 50px; /* Keeps input fields compact */
     max-width: 100px;
     width: 95%; 
     padding: 6x;
@@ -74,13 +75,14 @@ input[type="number"] {
         .table-section{
             text-align: center;
         }
-        .summaryTable td:last-child {
-            text-align: right;
-            padding-right: 400px;
-        }
+
         .allSummaryTable td:last-child {
             text-align: right;
-            padding-right: 400px;
+            padding-right: auto;
+        }
+        .allSummaryTable td {
+            font-size: 17px !important;
+            inline-size: 0px !important;
         }
         .delete-btn {
     background: red;
@@ -97,6 +99,8 @@ input[type="number"] {
 tr:hover .delete-btn {
     display: inline-block;
 }
+
+
 @media print {
     /* Hide UI Elements */
     .no-print, #printButton, .delete-cell {
@@ -107,7 +111,6 @@ tr:hover .delete-btn {
     html, body {
         background: white !important;
         color: black;
-        font-size: 12px;
         margin: 0;
         padding: 0;
         box-shadow: none !important;
@@ -120,32 +123,6 @@ tr:hover .delete-btn {
         text-shadow: none !important;
     }
 
-    /* Center Tables */
-    .table-container {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-    }
-
-    table {
-        width: 90%;
-        max-width: 90%;
-        border-collapse: collapse;
-        page-break-inside: auto;
-        margin: auto;
-    }
-
-    th, td {
-        border: 1px solid #ddd;
-        padding: 6px;
-        text-align: center;
-    }
-
-    thead th {
-        background-color: #f0f0f0;
-        font-weight: bold;
-        padding: 8px;
-    }
 
     tr {
         page-break-inside: avoid;
@@ -170,9 +147,29 @@ tr:hover .delete-btn {
     /* Fix Print Page Margins to Avoid Overflow */
     @page {
         size: A4;
-        margin: 10mm;
+        margin: 5mm;
     }
+
+    .table-section{
+        width: 100% !important;
+    }
+    
+    
+    
+
+
+    td {
+        word-wrap: break-word !important;
+        white-space: normal !important;
+    }
+
 }
+
+
+
+
+
+
     </style>
 </head>
 <body>   
@@ -180,8 +177,8 @@ tr:hover .delete-btn {
         <button id="printButton" style="padding: 8px 12px; font-size: 14px; background: blue; color: white; border: none; cursor: pointer; margin-bottom: 10px;">
             Print to PDF
         </button>
-        <h2 contenteditable="true" id="estimateTitle" style="font-size: 17px; text-align: center; gray;">
-            Estimate for (edit)
+        <h2 contenteditable="true" id="estimateTitle" style="font-size: 17px; text-align: center;">
+            Estimate for (edit ✒️)
         </h2>
         <div class="table-section">
             <div class="table-title">Materials Schedule</div>
@@ -200,20 +197,16 @@ tr:hover .delete-btn {
                     </tr>
                 </thead>
                 <tbody id="materialsData"></tbody>   
+                <tbod>                    
+                    <tr><td  colspan="7" style="text-align: left; font-size: 17px;"><strong>Sub-Total: Material (₹)</strong></td><td colspan="2" style="text-align: right; font-size: 17px;"><strong id="totalRs"></strong></td></tr>
+                    <tr><td colspan="7" style="text-align: left; font-size: 17px;">Escalation @ 5% (₹)</td><td id="escalationRs" colspan="2" style="text-align: right; font-size: 17px;"></td></tr>
+                    <tr><td colspan="7" style="text-align: left; font-size: 17px;">Total Cost including Escalation (₹)</td><td id="subTotalRs" colspan="2" style="text-align: right; font-size: 17px;"></td></tr>
+                    <tr><td colspan="7" style="text-align: left; font-size: 17px;">Sundry @ 5% (₹)</td><td colspan="2" id="sundryRs" style="text-align: right; font-size: 17px;"></td></tr>
+                    <tr><td colspan="7" style="text-align: left; font-size: 17px;"><strong>Total Material Cost (₹)</strong></td><td colspan="2"  style="text-align: right; font-size: 17px;"><strong id="grandTotalRs"></strong></td></tr>
+                </tbod>
             </table>
         </div>
-        <div class="table-section">
-            <table class="summaryTable">
-                <tbody>
-                    <tr><td><strong>Sub-Total: Material (₹)</strong></td><td><strong id="totalRs"></strong></td></tr>
-                    <tr><td>Escalation @ 5% (₹)</td><td id="escalationRs"></td></tr>
-                    <tr><td>Total Cost including Escalation (₹)</td><td id="subTotalRs"></td></tr>
-                    <tr><td>Sundry @ 5% (₹)</td><td id="sundryRs"></td></tr>
-                    <tr><td><strong>Total Material Cost (₹)</strong></td><td><strong id="grandTotalRs"></strong></td></tr>
-                    <tr style='visibility: collapse;'><td><strong>Say</strong></td><td id="sayRs"></td></tr>
-                </tbody>
-            </table>
-        </div>
+
         <br>
         <div class="table-section">
             <div class="table-title">Labour Schedule</div>
@@ -232,39 +225,30 @@ tr:hover .delete-btn {
                     </tr>
                 </thead>
                 <tbody id="labourData"></tbody>
-            </table>
-        </div>
-        <div class="table-section">
-            <table class="labourSummaryTable">
                 <tbody>
-                    <tr><td><strong>Total Labour Cost (₹)</strong></td><td> <strong id="labourTotalRs">0.00</strong></td></tr>
+                    <tr><td colspan="7" style="text-align: left; font-size: 17px;"><strong>Total Labour Cost (₹)</strong></td><td colspan="2" style="text-align: right; font-size: 17px;"> <strong id="labourTotalRs">0.00</strong></td></tr>
                 </tbody>
             </table>
         </div>
         <br>
         <div class="table-section">
-            <div class="table-title">Summary</div>
-            <table class="summaryTable">       
-                        <div class="table-section">
-                            <table class="allSummaryTable">
-                                <tbody>
-                                    <tr><td><strong>Materials Cost (₹)</strong></td><td><strong id="materialsTotal">0.00</strong></td></tr>
-                                    <tr><td><strong>Labour Cost (₹)</strong></td><td><strong id="labourTotal">0.00</strong></td></tr>
-                                    <tr><td>Supervision Charges@ 10% on (Materials Cost + Labour Cost) (₹)</td><td id="supervision">0.00</td></tr>
-                                    <tr><td><strong>Total Cost including Supervision Charges(₹)</strong></td><td><strong id="totalAB">0.00</strong></td></tr>
-                                    <tr><td>Cess @ 1% (₹)</td><td id="cess">0.00</td></tr>
-                                    <tr><td><strong>Total Cost including Cess (₹)</strong></td><td><strong id="subTotalAll">0.00</strong></td></tr>
-                                    <tr><td>CGST @ 9% on Labour Cost (₹)</td><td id="cgst">0.00</td></tr>
-                                    <tr><td>SGST @ 9% on Labour Cost (₹)</td><td id="sgst">0.00</td></tr>
-                                    <tr><td><strong>Scheme Value (₹)</strong></td><td><strong id="grandTotalAll">0.00</strong></td></tr>
-                                </tbody>
-                            </table>
-                        </div>
+            <table class="allSummaryTable">
+                <tbody>
+                    <tr><td><strong>Materials Cost (₹)</strong></td><td><strong id="materialsTotal">0.00</strong></td></tr>
+                    <tr><td><strong>Labour Cost (₹)</strong></td><td><strong id="labourTotal">0.00</strong></td></tr>
+                    <tr><td>Supervision Charges@ 10% on (Materials Cost + Labour Cost) (₹)</td><td id="supervision">0.00</td></tr>
+                    <tr><td><strong>Total Cost including Supervision Charges(₹)</strong></td><td><strong id="totalAB">0.00</strong></td></tr>
+                    <tr><td>Cess @ 1% (₹)</td><td id="cess">0.00</td></tr>
+                    <tr><td><strong>Total Cost including Cess (₹)</strong></td><td><strong id="subTotalAll">0.00</strong></td></tr>
+                    <tr><td>CGST @ 9% on Labour Cost (₹)</td><td id="cgst">0.00</td></tr>
+                    <tr><td>SGST @ 9% on Labour Cost (₹)</td><td id="sgst">0.00</td></tr>
+                    <tr><td><strong>Scheme Value (₹)</strong></td><td><strong id="grandTotalAll">0.00</strong></td></tr>
+                </tbody>
             </table>
-            <p id="grandTotalWords" style="font-weight: bold; text-align: left; margin-left: 30px; margin-right: 30px; margin-top: 10px;">
-                Total Scheme Value: <span id="totalInWords"></span>
-            </p>            
         </div>
+        <p id="grandTotalWords" style="font-weight: bold; text-align: left; margin-left: 10px; margin-right: 30px; margin-top: 10px;">
+            Total Scheme Value: <span id="totalInWords"></span>
+        </p>           
     </div>
     <script>
 const materialsSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSmo_wgu_vIyfURXVhEBg07npBwo8Oh4W6ek3T82ss2p1zlJwORDiVvGbbU5U4ZoCq9r9jgcxcjzEQK/pub?gid=0&single=true&output=csv"; 
@@ -351,16 +335,17 @@ tableBody.appendChild(row);
         }
         function updateAmounts() {
     let totalMaterials = 0, totalLabour = 0;
-    document.querySelectorAll(".materialsTable tbody tr").forEach(row => {
+    document.querySelectorAll(".materialsTable #materialsData tr").forEach(row => {
         const qnty = parseFloat(row.querySelector(".total-qnty")?.value) || 0;
         const rate = parseFloat(row.cells[7]?.textContent) || 0;
         const amount = qnty * rate;
         console.log(qnty);
+        console.log(row);
         row.querySelector(".amount").textContent = amount.toFixed(2);
         row.querySelector(".total-qnty").textContent = qnty.toFixed(2);
         totalMaterials += amount;
     });
-    document.querySelectorAll(".labourTable tbody tr").forEach(row => {
+    document.querySelectorAll(".labourTable #labourData tr").forEach(row => {
         const qnty = parseFloat(row.querySelector(".total-qnty")?.value) || 0;
         const rate = parseFloat(row.cells[7]?.textContent) || 0;
         const amount = qnty * rate;
@@ -368,8 +353,7 @@ tableBody.appendChild(row);
         row.querySelector(".total-qnty").textContent = qnty.toFixed(2);
         totalLabour += amount;
     });
-    document.getElementById("totalMaterials").textContent = totalMaterials.toFixed(2);
-    document.getElementById("totalLabour").textContent = totalLabour.toFixed(2);
+    
 }
         fetchMaterials();
         fetchLabour();
@@ -403,7 +387,6 @@ function calculateSummary() {
             document.getElementById("sundryRs").textContent = sundry.toFixed(2);
             let grandTotal = subTotal + sundry;
             document.getElementById("grandTotalRs").textContent = grandTotal.toFixed(2);
-            document.getElementById("sayRs").textContent = Math.round(grandTotal);
         }     
         function calculateLabourTotal() {
             let labourTotal = 0;
