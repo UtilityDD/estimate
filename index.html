@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Interactive Tables</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <style>
+        body {
+
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 10px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+            border-collapse: collapse;
+            table-layout: auto; /* Ensures columns adjust dynamically */
+        }
+
+
+        th, td {
+            padding: 2px;
+            text-align: left;
+            border: 1px solid #ddd;
+            max-width: 350px;
+            font-size: small;
+            word-wrap: break-word;
+
+
+        }
+
+        th {
+            background-color: #f4f4f4;
+            font-weight: 600;
+        }
+
+
+        input[type="number"] {
+
+            max-width: 70px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: right;
+            margin: auto;
+            display: block;
+        }
+
+        .table-container {
+            overflow-x: auto; /* Enables scrolling if needed */
+            max-width: 100%;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .table-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        th {
+            text-align: center;
+        }
+
+        /* Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .table-section {
+            text-align: center;
+        }
+
+        .allSummaryTable td:last-child {
+            text-align: right;
+            padding-left: 50px;
+        }
+
+        .allSummaryTable td {
+            font-size: 17px !important;
+            inline-size: 0 !important;
+        }
+
+        .delete-btn {
+            background: red;
+            color: white;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-size: 20px;
+            border-radius: 9px;
+            display: none; /* Initially hidden */
+            width: 100%;
+            text-align: center;
+        }
+
+        tr:hover .delete-btn {
+            display: inline-block;
+        }
+        input {
+            border: none !important;
+            background: transparent !important;
+            outline: none !important;
+        }
+
+        @media print {
+            /* Hide UI Elements */
+            .no-print, #printButton, .delete-cell {
+                display: none !important;
+            }
+
+            @media print {
+                #tableFilter {
+                    display: none;
+                }
+            }
+            @media print {
+                #filterContainer {
+                    display: none;
+                }
+            }
+
+            /* Remove Any Background and Shadows */
+            html, body {
+                background: white !important;
+                color: black;
+
+                box-shadow: none !important;
+                filter: none !important;
+            }
+
+            /* Remove Any Potential Box Shadows from Containers */
+            * {
+                box-shadow: none !important;
+                text-shadow: none !important;
+            }
+
+            tr {
+                page-break-inside: avoid;
+            }
+
+            /* Ensure Table Headers Repeat on New Pages */
+            thead {
+                display: table-header-group;
+            }
+
+            tbody {
+                display: table-row-group;
+            }
+
+            /* Remove Borders from Inputs */
+            input {
+                border: none !important;
+                background: transparent !important;
+                outline: none !important;
+                margin-right: 10px !important;
+            }
+
+            /* Fix Print Page Margins to Avoid Overflow */
+            @page {
+                size: A4;
+                margin: 5mm;
+            }
+
+            .table-section {
+                width: 100% !important;
+            }
+
+            td {
+                word-wrap: break-word !important;
+                white-space: normal !important;
+
+            }
+            td:nth-child(4) {
+                padding-right: 7px !important;
+            }
+            td:nth-child(5) {
+                padding-right: 7px !important;
+            }
+            td:nth-child(6) {
+                padding-right: 7px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <button id="printButton"
+            style="padding: 8px 12px; font-size: 14px; background: blue; color: white; border: none; cursor: pointer; margin-bottom: 10px;">
+        Print to PDF
+    </button>
+    <div id="filterContainer">
+        <label for="tableFilter">Select estimate type:</label>
+        <select id="tableFilter">
+            <option value="option1">LT AB Cable</option>
+            <option value="option2">LT break-down</option>
+            <option value="option3">LT Only</option>
+            <option value="option4">11kV Line</option>
+            <option value="option5">HT-DTR-LT</option>
+            <option value="option6">33kV Line</option>
+        </select>
+    </div>
+    <h2 contenteditable="true" id="estimateTitle" style="font-size: 17px; text-align: center;">
+        Estimate for (edit ✒️)
+    </h2>
+    <div class="table-section">
+        <div class="table-title">Materials Schedule</div>
+        <table class="materialsTable">
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Description</th>
+                <th>Unit</th>
+                <th>Qnty.-HT</th>
+                <th>Qnty.-S/S</th>
+                <th>Qnty.-LT</th>
+                <th>Total Qnty.</th>
+                <th>Rate (₹)</th>
+                <th>Amount (₹)</th>
+            </tr>
+            </thead>
+            <tbody id="materialsData"></tbody>
+            <tbod>
+                <tr>
+                    <td colspan="7" style="text-align: left; font-size: 17px;"><strong>Sub-Total: Material (₹)</strong>
+                    </td>
+                    <td colspan="2" style="text-align: right; font-size: 17px;"><strong id="totalRs"></strong></td>
+                </tr>
+                <tr>
+                    <td colspan="7" style="text-align: left; font-size: 17px;">Escalation @ 5% (₹)</td>
+                    <td colspan="2" id="escalationRs" style="text-align: right; font-size: 17px;"></td>
+                </tr>
+                <tr>
+                    <td colspan="7" style="text-align: left; font-size: 17px;">Total Cost including Escalation (₹)</td>
+                    <td colspan="2" id="subTotalRs" style="text-align: right; font-size: 17px;"></td>
+                </tr>
+                <tr>
+                    <td colspan="7" style="text-align: left; font-size: 17px;">Sundry @ 5% (₹)</td>
+                    <td colspan="2" id="sundryRs" style="text-align: right; font-size: 17px;"></td>
+                </tr>
+                <tr>
+                    <td colspan="7" style="text-align: left; font-size: 17px;"><strong>Total Material Cost (₹)</strong>
+                    </td>
+                    <td colspan="2" style="text-align: right; font-size: 17px;"><strong id="grandTotalRs"></strong></td>
+                </tr>
+            </tbod>
+        </table>
+    </div>
+    <br>
+    <div class="table-section">
+        <div class="table-title">Labour Schedule</div>
+        <table class="labourTable">
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Description</th>
+                <th>Unit</th>
+                <th>Qnty.-HT</th>
+                <th>Qnty.-S/S</th>
+                <th>Qnty.-LT</th>
+                <th>Total Qnty.</th>
+                <th>Rate (₹)</th>
+                <th>Amount (₹)</th>
+            </tr>
+            </thead>
+            <tbody id="labourData"></tbody>
+            <tbody>
+            <tr>
+                <td colspan="7" style="text-align: left; font-size: 17px;"><strong>Total Labour Cost (₹)</strong></td>
+                <td colspan="2" style="text-align: right; font-size: 17px;"><strong id="labourTotalRs">0.00</strong>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <br>
+    <div class="table-section">
+        <div class="table-title">Summary</div>
+        <table class="allSummaryTable">
+            <tbody>
+            <tr>
+                <td colspan="7"><strong>Materials Cost (₹)</strong></td>
+                <td colspan="2"><strong id="materialsTotal">0.00</strong></td>
+            </tr>
+            <tr>
+                <td colspan="7"><strong>Labour Cost (₹)</strong></td>
+                <td colspan="2"><strong id="labourTotal">0.00</strong></td>
+            </tr>
+            <tr>
+                <td colspan="7">Supervision Charges@ 15% on (Materials Cost + Labour Cost) (₹)</td>
+                <td colspan="2" id="supervision">0.00</td>
+            </tr>
+            <tr>
+                <td colspan="7"><strong>Total Cost including Supervision Charges(₹)</strong></td>
+                <td colspan="2"><strong id="totalAB">0.00</strong></td>
+            </tr>
+            <tr>
+                <td colspan="7">Cess @ 1% (₹)</td>
+                <td id="cess">0.00</td>
+            </tr>
+            <tr>
+                <td colspan="7"><strong>Total Cost including Cess (₹)</strong></td>
+                <td colspan="2"><strong id="subTotalAll">0.00</strong></td>
+            </tr>
+            <tr>
+                <td colspan="7">CGST @ 9% on Labour Cost (₹)</td>
+                <td colspan="2" id="cgst">0.00</td>
+            </tr>
+            <tr>
+                <td colspan="7">SGST @ 9% on Labour Cost (₹)</td>
+                <td colspan="2" id="sgst">0.00</td>
+            </tr>
+            <tr>
+                <td colspan="7"><strong>Scheme Value (₹)</strong></td>
+                <td colspan="2"><strong id="grandTotalAll">0.00</strong></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <p id="grandTotalWords"
+       style="font-weight: bold; text-align: left; margin-left: 10px; margin-right: 30px; margin-top: 10px;">
+        Total Scheme Value: <span id="totalInWords"></span>
+    </p>
+</div>
+
+<script src="estimate.js"></script>
+</body>
+</html>
