@@ -71,26 +71,6 @@ async function fetchLabour() {
         <button class="delete-btn">&times;</button>
     </td>
 `;
-// Add CSS styles for animation
-                document.head.insertAdjacentHTML("beforeend", `
-    <style>
-        .delete-btn {
-            background: darkred;
-            color: white;
-            border: none;
-            padding: 0px 4px;
-            cursor: pointer;
-            transition: transform 0.4s ease-in-out, background 0.4s;
-        }
-        .delete-btn:hover {
-            background: red;
-            transform: scale(1.1);
-        }
-        .delete-btn:active {
-            transform: scale(2);
-        }
-    </style>
-`);
                 tableBody.appendChild(row);
             }
         });
@@ -266,33 +246,199 @@ function updateTotalInWords() {
 document.addEventListener("DOMContentLoaded", function () {
     updateTotalInWords();
 });
-document.getElementById("printButton").addEventListener("click", function () {
-    // Ensure input values persist in print
-    document.querySelectorAll("input").forEach(input => {
-        input.setAttribute("value", input.value);
-        input.style.border = "none";
-        input.style.background = "transparent";
-        input.style.outline = "none";
-    });
-    // Prevent page break between table name and table
-    document.querySelectorAll(".table-container").forEach(container => {
-        container.style.pageBreakInside = "avoid";
-    });
-    // Inject CSS to hide the 6th row in #summaryTable during printing
-    const style = document.createElement("style");
-    style.textContent = `
+
+// Add CSS styles for animation
+document.addEventListener("DOMContentLoaded", function() {
+    document.head.insertAdjacentHTML("beforeend", `
+    <style>
+        .delete-btn {
+            background: darkred;
+            color: white;
+            border: none;
+            padding: 0px 4px;
+            cursor: pointer;
+            transition: transform 0.4s ease-in-out, background 0.4s;
+        }
+        .delete-btn:hover {
+            background: red;
+            transform: scale(1.1);
+        }
+        .delete-btn:active {
+            transform: scale(2);
+        }
+        
+        /* Print styles */
         @media print {
             #summaryTable tr:nth-child(5) {
                 display: none !important;
             }
+            button, .delete-cell {
+                display: none !important;
+            }
+            /* Remove borders for cleaner print */
+            input {
+                border: none !important;
+                background-color: transparent !important;
+                -webkit-appearance: none !important;
+                appearance: none !important;
+            }
         }
-    `;
-    document.head.appendChild(style);
-    // Trigger print
-    window.print();
-    // Remove the style after printing
-    document.head.removeChild(style);
+    </style>
+`);
 });
+
+// Improved print functionality
+document.getElementById("printButton").addEventListener("click", function () {
+    // Create a function to notify the parent when printing is done
+    function notifyPrintComplete() {
+        try {
+            // Try to notify the parent window
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage("printComplete", "*");
+            }
+        } catch(e) {
+            console.log("Could not communicate with parent window:", e);
+        }
+    }
+
+    // Fix for Google Sites embedded content
+    try {
+        // Create print styles
+        const printStyles = document.createElement('style');
+        printStyles.id = 'print-styles';
+        printStyles.innerHTML = `
+            @media print {
+                body, html {
+                    width: 100% !important;
+                    height: auto !important;
+                    overflow: visible !important;
+                }
+                
+                #summaryTable tr:nth-child(5) {
+                    display: none !important;
+                }
+                
+                button, .delete-cell {
+                    display: none !important;
+                }
+                
+                input {
+                    border: none !important;
+                    background-color: transparent !important;
+                    -webkit-appearance: none !important;
+                    appearance: none !important;
+                }
+                
+                .table-container {
+                    page-break-inside: avoid;
+                }
+            }
+        `;
+        document.head.appendChild(printStyles);
+        
+        // Ensure input values persist in print
+        document.querySelectorAll("input").forEach(input => {
+            const value = input.value || "0";
+            input.setAttribute("value", value);
+            input.dataset.originalValue = value;
+            
+            // Force the input to show its value even when printing
+            const span = document.createElement('span');
+            span.className = 'print-value';
+            span.textContent = value;
+            span.style.display = 'none';
+            input.parentNode.insertBefore(span, input.nextSibling);
+        });
+        
+        // Create special styles for print-only span values
+        const valueStyles = document.createElement('style');
+        valueStyles.innerHTML = `
+            @media print {
+                input { display: none !important; }
+                .print-value { display: inline !important; }
+            }
+        `;
+        document.head.appendChild(valueStyles);
+        
+        // Try two methods for printing:
+        
+        // Method 1: Direct print - works in most browsers
+        window.print();
+        
+        // Method 2: Create an iframe and print that - often works in embedded scenarios
+        setTimeout(() => {
+            try {
+                const printFrame = document.createElement('iframe');
+                printFrame.style.position = 'fixed';
+                printFrame.style.right = '0';
+                printFrame.style.bottom = '0';
+                printFrame.style.width = '0';
+                printFrame.style.height = '0';
+                printFrame.style.border = '0';
+                
+                document.body.appendChild(printFrame);
+                
+                // Copy the document content to the iframe
+                const frameDoc = printFrame.contentWindow.document;
+                frameDoc.open();
+                
+                // Copy head content (styles)
+                frameDoc.write('<html><head>');
+                Array.from(document.head.querySelectorAll('style, link')).forEach(el => {
+                    frameDoc.write(el.outerHTML);
+                });
+                frameDoc.write('</head><body>');
+                
+                // Copy body content
+                frameDoc.write(document.body.innerHTML);
+                frameDoc.write('</body></html>');
+                frameDoc.close();
+                
+                // Wait for the iframe to load completely
+                printFrame.onload = function() {
+                    try {
+                        // Focus and print the iframe
+                        printFrame.contentWindow.focus();
+                        printFrame.contentWindow.print();
+                        
+                        // Remove the iframe after printing
+                        setTimeout(() => {
+                            document.body.removeChild(printFrame);
+                            notifyPrintComplete();
+                        }, 1000);
+                    } catch(e) {
+                        console.error("Error printing iframe:", e);
+                    }
+                };
+            } catch(e) {
+                console.error("Error setting up print iframe:", e);
+            }
+        }, 500);
+        
+        // Clean up after printing
+        window.addEventListener('afterprint', function() {
+            // Remove the special print styles
+            if (document.getElementById('print-styles')) {
+                document.head.removeChild(document.getElementById('print-styles'));
+            }
+            if (valueStyles.parentNode) {
+                document.head.removeChild(valueStyles);
+            }
+            
+            // Remove the print-value spans
+            document.querySelectorAll('.print-value').forEach(span => {
+                span.parentNode.removeChild(span);
+            });
+            
+            notifyPrintComplete();
+        });
+    } catch(e) {
+        console.error("Print error:", e);
+        // Fallback to basic print
+        window.print();
+    }
+});
+
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("input").forEach(input => {
         const savedValue = localStorage.getItem(input.dataset.index);
@@ -305,6 +451,7 @@ document.addEventListener("input", (event) => {
         localStorage.setItem(event.target.dataset.index, event.target.value);
     }
 });
+
 document.addEventListener("DOMContentLoaded", function () {
     const tableFilter = document.getElementById("tableFilter");
     tableFilter.value = "option1"; // Set default option
@@ -361,3 +508,22 @@ function updateRowColors(table) {
         row.style.backgroundColor = (index % 2 === 0) ? "#ffffff" : "#f2f2f2";
     });
 }
+
+// Handle messages from parent frame (Google Sites)
+window.addEventListener('message', function(event) {
+    // Check if the message is requesting a print
+    if (event.data === 'print') {
+        document.getElementById('printButton').click();
+    }
+});
+
+// Let the parent know this frame is ready
+window.addEventListener('load', function() {
+    try {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage('iframeReady', '*');
+        }
+    } catch(e) {
+        console.log("Could not communicate with parent window:", e);
+    }
+});
